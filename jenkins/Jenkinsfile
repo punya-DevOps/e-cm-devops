@@ -16,6 +16,26 @@ pipeline {
             }
         }
 
+        stage('Check Application Changes') {
+            steps {
+                script {
+                    def changes = sh(
+                        script: 'git diff-tree --no-commit-id --name-only -r HEAD',
+                        returnStdout: true
+                    ).trim()
+
+                    echo "Changed files:"
+                    echo changes
+
+                    if (!(changes.contains('frontend/') ||
+                          changes.contains('backend/'))) {
+                        currentBuild.result = 'NOT_BUILT'
+                        error('No frontend or backend changes. Skipping CI.')
+                    }
+                }
+            }
+        }
+
         stage('Test Backend') {
             steps {
                 dir('backend') {
@@ -53,8 +73,8 @@ pipeline {
                 ]) {
                     sh '''
                         echo "$DOCKER_PASS" | docker login \
-                        -u "$DOCKER_USER" \
-                        --password-stdin
+                            -u "$DOCKER_USER" \
+                            --password-stdin
 
                         docker push ${FRONTEND_IMAGE}:${IMAGE_TAG}
                         docker push ${BACKEND_IMAGE}:${IMAGE_TAG}
@@ -69,10 +89,10 @@ pipeline {
             steps {
                 sh '''
                     sed -i "/repository: puneetb15\\/ecommerce-frontend/{n;s/tag: .*/tag: ${IMAGE_TAG}/;}" \
-                    helm/ecommerce/values.yaml
+                        helm/ecommerce/values.yaml
 
                     sed -i "/repository: puneetb15\\/ecommerce-backend/{n;s/tag: .*/tag: ${IMAGE_TAG}/;}" \
-                    helm/ecommerce/values.yaml
+                        helm/ecommerce/values.yaml
                 '''
             }
         }
