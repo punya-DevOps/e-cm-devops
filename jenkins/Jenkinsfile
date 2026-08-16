@@ -20,10 +20,11 @@ pipeline {
             steps {
                 dir('backend') {
                     sh '''
-                        python3 -m pip install -r requirements.txt
+                        python3 -m venv .venv
+                        .venv/bin/pip install -r requirements.txt
 
                         if [ -d tests ]; then
-                            pytest
+                            .venv/bin/pytest
                         else
                             echo "No tests found"
                         fi
