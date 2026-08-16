@@ -85,6 +85,15 @@ pipeline {
             }
         }
 
+        stage('Sync with GitHub') {
+            steps {
+                sh '''
+                    git fetch origin main
+                    git rebase origin/main
+                '''
+            }
+        }
+
         stage('Update Helm') {
             steps {
                 sh '''
@@ -115,9 +124,6 @@ pipeline {
                     sh '''
                         git config user.name "Jenkins"
                         git config user.email "jenkins@example.com"
-
-                        git fetch origin main
-                        git rebase origin/main
 
                         git add helm/ecommerce/values.yaml
 
