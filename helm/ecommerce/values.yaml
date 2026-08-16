@@ -1,0 +1,64 @@
+frontend:
+
+  replicaCount: 1
+
+  image:
+    repository: puneetb15/ecommerce-frontend
+    tag: v2
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 80
+
+
+backend:
+
+  replicaCount: 1
+
+  image:
+    repository: puneetb15/ecommerce-backend
+    tag: v1
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 5000
+
+
+mysql:
+
+  image:
+    repository: mysql
+    tag: "8.0"
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 3306
+
+  database: ecommerce
+
+  username: ecommerce_user
+
+  password: ecommerce_password
+
+  rootPassword: root_password
+
+  storage:
+    size: 5Gi
+
+
+ingress:
+
+  enabled: true
+
+  className: alb
+
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+
+  frontendPath: /
+
+  backendPath: /api
