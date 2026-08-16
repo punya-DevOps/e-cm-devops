@@ -4,7 +4,7 @@ frontend:
 
   image:
     repository: puneetb15/ecommerce-frontend
-    tag: 297d3a4030e0885823856607b4b07dff5df3863e
+    tag: 0a69148b37f24f331e59f46d23320a43e5c4314a
     pullPolicy: IfNotPresent
 
   service:
@@ -18,7 +18,7 @@ backend:
 
   image:
     repository: puneetb15/ecommerce-backend
-    tag: 297d3a4030e0885823856607b4b07dff5df3863e
+    tag: 0a69148b37f24f331e59f46d23320a43e5c4314a
     pullPolicy: IfNotPresent
 
   service:
