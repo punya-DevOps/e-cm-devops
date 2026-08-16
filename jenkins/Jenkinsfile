@@ -1,0 +1,118 @@
+pipeline {
+    agent any
+
+    environment {
+        FRONTEND_IMAGE = "puneetb15/ecommerce-frontend"
+        BACKEND_IMAGE  = "puneetb15/ecommerce-backend"
+        IMAGE_TAG      = "${GIT_COMMIT}"
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/punya-DevOps/e-cm-devops.git'
+            }
+        }
+
+        stage('Test Backend') {
+            steps {
+                dir('backend') {
+                    sh '''
+                        python3 -m pip install -r requirements.txt
+
+                        if [ -d tests ]; then
+                            pytest
+                        else
+                            echo "No tests found"
+                        fi
+                    '''
+                }
+            }
+        }
+
+        stage('Build Docker Images') {
+            steps {
+                sh '''
+                    docker build -t ${FRONTEND_IMAGE}:${IMAGE_TAG} ./frontend
+                    docker build -t ${BACKEND_IMAGE}:${IMAGE_TAG} ./backend
+                '''
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub-creds',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )
+                ]) {
+                    sh '''
+                        echo "$DOCKER_PASS" | docker login \
+                        -u "$DOCKER_USER" \
+                        --password-stdin
+
+                        docker push ${FRONTEND_IMAGE}:${IMAGE_TAG}
+                        docker push ${BACKEND_IMAGE}:${IMAGE_TAG}
+
+                        docker logout
+                    '''
+                }
+            }
+        }
+
+        stage('Update Helm') {
+            steps {
+                sh '''
+                    sed -i "/repository: puneetb15\\/ecommerce-frontend/{n;s/tag: .*/tag: ${IMAGE_TAG}/;}" \
+                    helm/ecommerce/values.yaml
+
+                    sed -i "/repository: puneetb15\\/ecommerce-backend/{n;s/tag: .*/tag: ${IMAGE_TAG}/;}" \
+                    helm/ecommerce/values.yaml
+                '''
+            }
+        }
+
+        stage('Validate Helm') {
+            steps {
+                sh 'helm lint helm/ecommerce'
+            }
+        }
+
+        stage('Push Helm Changes') {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'github-creds',
+                        usernameVariable: 'GITHUB_USER',
+                        passwordVariable: 'GITHUB_TOKEN'
+                    )
+                ]) {
+                    sh '''
+                        git config user.name "Jenkins"
+                        git config user.email "jenkins@example.com"
+
+                        git add helm/ecommerce/values.yaml
+
+                        git commit -m "Update Docker image tags" || true
+
+                        git push https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/punya-DevOps/e-cm-devops.git HEAD:main
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'CI pipeline completed successfully!'
+        }
+
+        failure {
+            echo 'CI pipeline failed!'
+        }
+    }
+}
