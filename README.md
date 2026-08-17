@@ -361,7 +361,7 @@ Jenkins picks up the change via Poll SCM (every minute), runs the full pipeline,
 📍 Bengaluru, Karnataka
 
 [![GitHub](https://img.shields.io/badge/GitHub-punya--DevOps-181717?style=flat-square&logo=github)](https://github.com/punya-DevOps)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Puneet_Bhairannavar-0A66C2?style=flat-square&logo=linkedin)](https://www.linkedin.com/in/puneet-bhairannavar)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Puneet_Bhairannavar-0A66C2?style=flat-square&logo=linkedin)](https://www.linkedin.com/in/puneet-bhairannavar-a3b4b1375/)
 
 ---
 
